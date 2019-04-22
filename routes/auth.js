@@ -6,18 +6,23 @@ const { RefreshToken } = require('../models/refreshToken');
 const bcrypt = require('bcrypt');
 const randomToken = require('random-token');
 const TOKEN_CONSTANT = require('../constants/token');
+const winston = require('winston');
 
 
 router.post('/register', async (req, res) => {
-  const saltRounds = 10;
-  const account = new Account({
-    account: req.body.account,
-    password: bcrypt.hashSync(req.body.password, saltRounds),
-  });
-
-  await account.save();
-
-  res.send('Account is created');
+  try {
+    const saltRounds = 10;
+    const account = new Account({
+      account: req.body.account,
+      password: bcrypt.hashSync(req.body.password, saltRounds),
+    });
+  
+    await account.save();
+    res.send('Account is created');
+  } catch (err) {
+    winston.error(`${err.code}: ${err.message}`);
+    res.status(400).send(err.message);
+  }
 });
 
 router.post('/login', async (req, res) => {
